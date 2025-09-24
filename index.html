@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IP Information</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding-top: 50px; /* extra top space for WebView */
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 26px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .info div {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 15px;
+      border-radius: 8px;
+      background-color: #f1f1f1;
+      font-size: 15px;
+      color: #555;
+    }
+
+    .info div span:first-child {
+      font-weight: 600;
+      color: #222;
+    }
+
+    .loading {
+      text-align: center;
+      font-size: 17px;
+      color: #888;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>IP Information</h1>
+    <div id="loading" class="loading">Fetching IP data...</div>
+    <div class="info" id="info" style="display:none;"></div>
+  </div>
+
+  <script>
+    async function fetchIPInfo() {
+      try {
+        const response = await fetch('http://ip-api.com/json/');
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          const infoDiv = document.getElementById('info');
+          document.getElementById('loading').style.display = 'none';
+          infoDiv.style.display = 'flex';
+
+          // Display the top fields first
+          const topFields = ["query", "isp", "country", "city", "regionName"];
+          topFields.forEach(key => {
+            const div = document.createElement('div');
+            const label = key === "query" ? "IP Address" :
+                          key === "isp" ? "ISP" :
+                          key === "country" ? "Country" :
+                          key === "city" ? "City" :
+                          "Region Name";
+            div.innerHTML = `<span>${label}</span><span>${data[key] || "N/A"}</span>`;
+            infoDiv.appendChild(div);
+          });
+
+          // Display remaining fields
+          const remainingFields = {
+            "Country Code": data.countryCode,
+            "Region": data.region,
+            "ZIP": data.zip || "N/A",
+            "Latitude": data.lat,
+            "Longitude": data.lon,
+            "Timezone": data.timezone,
+            "Organization": data.org || "N/A",
+            "AS": data.as
+          };
+
+          for (const key in remainingFields) {
+            const div = document.createElement('div');
+            div.innerHTML = `<span>${key}</span><span>${remainingFields[key]}</span>`;
+            infoDiv.appendChild(div);
+          }
+
+        } else {
+          document.getElementById('loading').textContent = 'Failed to fetch IP data.';
+        }
+      } catch (error) {
+        document.getElementById('loading').textContent = 'Error fetching IP data.';
+        console.error(error);
+      }
+    }
+
+    fetchIPInfo();
+  </script>
+</body>
+</html>
